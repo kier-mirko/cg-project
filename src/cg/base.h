@@ -717,7 +717,10 @@ function String8        os_file_read(Arena *arena, String8 file_name);
 ////////////////////////////////////////////////
 #if OS_LINUX
 
+#include <unistd.h>
+#include <fcntl.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 
 #endif
 

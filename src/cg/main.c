@@ -72,6 +72,9 @@ main(int argc, char **argv)
   os_main_init(argc, argv);
   int result = 0;
   
+  S32 width = 1280;
+  S32 height = 720;
+  
   Arena *arena = arena_alloc();
   String8 obj = os_file_read(arena, str8_lit("model/dragon.obj"));
   ObjModel model = obj_parse(arena, obj);
@@ -81,7 +84,7 @@ main(int argc, char **argv)
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   
-  GLFWwindow *window = glfwCreateWindow(1280, 720, "Computer Graphics", 0, 0);
+  GLFWwindow *window = glfwCreateWindow(width, height, "Computer Graphics", 0, 0);
   if(window)
   {
     glfwMakeContextCurrent(window);
@@ -190,7 +193,6 @@ main(int argc, char **argv)
       
       Mat4x4F32 projection = m4x4f32_make_perspective(45.0f, 1280.f/720.f, 0.1f, 100.f);
       Mat4x4F32 view = m4x4f32_make_translate(v3f32(0.f, 0.f, -3.0f));
-      
       
       while(!glfwWindowShouldClose(window))
       {
