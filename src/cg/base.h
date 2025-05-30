@@ -361,29 +361,6 @@ struct Vec3F32
   };
 };
 
-typedef struct Vec4F32 Vec4F32;
-struct Vec4F32
-{
-  F32 x;
-  F32 y;
-  F32 z;
-  F32 w;
-};
-
-typedef struct Rng1S32 Rng1S32;
-struct Rng1S32
-{
-  S32 min;
-  S32 max;
-};
-
-typedef struct Rng1F32 Rng1F32;
-struct Rng1F32
-{
-  F32 min;
-  F32 max;
-};
-
 typedef struct Mat4x4F32 Mat4x4F32;
 struct Mat4x4F32
 {
@@ -472,14 +449,6 @@ struct String8List
   S64 total_size;
 };
 
-typedef struct String8Join String8Join;
-struct String8Join
-{
-  String8 pre;
-  String8 sep;
-  String8 pos;
-};
-
 typedef struct String8Cut String8Cut;
 struct String8Cut
 {
@@ -540,22 +509,6 @@ function F32     v3f32_length(Vec3F32 v);
 function F32     v3f32_dot(Vec3F32 a, Vec3F32 b);
 function Vec3F32 v3f32_norm(Vec3F32 v);
 function Vec3F32 v3f32_cross(Vec3F32 a, Vec3F32 b);
-
-// 4d vector
-function Vec4F32 v4f32_add(Vec4F32 a, Vec4F32 b);
-function Vec4F32 v4f32_sub(Vec4F32 a, Vec4F32 b);
-function Vec4F32 v4f32_scale(Vec4F32 v, F32 s);
-function F32     v4f32_length(Vec4F32 v);
-function F32     v4f32_dot(Vec4F32 a, Vec4F32 b);
-
-// range 
-function B32 r1s32_contains(Rng1S32 r, S32 x);
-function S32 r1s32_dim(Rng1S32 r);
-function S32 r1s32_clamp(Rng1S32 r, S32 v);
-
-function B32 r1f32_contains(Rng1F32 r, F32 x);
-function F32 r1f32_dim(Rng1F32 r);
-function F32 r1f32_clamp(Rng1F32 r, F32 v);
 
 // mat4x4
 
@@ -625,38 +578,24 @@ function String8 str8(U8 *str, S64 size);
 function String8 str8_span(U8 *first, U8 *opl);
 function String8 str8_cstring(U8 *cstr);
 
-function String16 str16_cstring(U16 *cstr);
-
 // operator
 function B32 str8_match(String8 a, String8 b, StringMatchFlags flags);
 
-// compound constructor
-function String8 str8_prefix(String8 str, S64 size);
-function String8 str8_postfix(String8 str, S64 size);
-function String8 str8_skip(String8 str, S64 amt);
-function String8 str8_chop(String8 str, S64 amt);
-function String8 str8_substr(String8 str, S64 first, S64 opl);
-
+// trimming
 function String8 str8_trim_left(String8 str);
 function String8 str8_trim_right(String8 str);
 
 function String8Cut str8_cut(String8 str, U8 sep);
 
 function String8 str8_push_copy(Arena *arena, String8 string);
-function String8 str8_pushfv(Arena *arena, const char *fmt, va_list args);
-function String8 str8_pushf(Arena *arena, const char *fmt, ...);
-function String8 str8_push_concat(Arena *arena, String8 a, String8 b);
-function String8 str8_lower(Arena *arena, String8 str);
-function String8 str8_upper(Arena *arena, String8 str);
 
-function void    str8_list_push_node(String8List *list, String8Node *node);
-function void    str8_list_push(Arena *arena, String8List *list, String8 string);
-function void    str8_list_push_node_front(String8List *list, String8Node *node);
-function void    str8_list_push_front(Arena *arena, String8List *list, String8 string);
-function void    str8_list_pushf(Arena *arena, String8List *list, const char *fmt, ...);
-function void    str8_list_push_frontf(Arena *arena, String8List *list, const char *fmt, ...);
-function String8 str8_list_join(Arena *arena, String8List *list, String8Join *optional_join);
-function String8List str8_split(Arena *arena, String8 string, U8 *splits, S32 splits_count);
+// string list
+function void str8_list_push_node(String8List *list, String8Node *node);
+function void str8_list_push(Arena *arena, String8List *list, String8 string);
+
+// number <-> string conversoin 
+function S32 s32_from_str8(String8 str);
+function F32 f32_from_str8(String8 str);
 
 // utf conversions
 function Codepoint utf8_decode(U8 *str, S32 cap);
@@ -669,7 +608,6 @@ function String16 str16_from_8(Arena *arena, String8 string);
 
 // charcters functions
 function U8  char_to_lower(U8 c);
-function U8  char_to_upper(U8 c);
 function B32 char_is_space(U8 c);
 
 ////////////////////////////////////////////////

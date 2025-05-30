@@ -76,7 +76,7 @@ main(int argc, char **argv)
   S32 height = 720;
   
   Arena *arena = arena_alloc();
-  String8 obj = os_file_read(arena, str8_lit("model/dragon.obj"));
+  String8 obj = os_file_read(arena, str8_lit("model/suzanne.obj"));
   ObjModel model = obj_parse(arena, obj);
   GLVertexArray vertices = gl_vertex_array_from_obj(arena, model);
   glfwInit();

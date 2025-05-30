@@ -33,9 +33,6 @@ struct GLVertexArray
   S64 count;
 };
 
-function S32 s32_from_str8(String8 str);
-function F32 f32_from_str8(String8 str);
-
 function Vec3F32 obj_parse_v3f32(String8 str);
 function ObjFace obj_parse_face(String8 str, S64 verts_count, S64 norms_count);
 function ObjModel obj_parse(Arena *arena, String8 obj);

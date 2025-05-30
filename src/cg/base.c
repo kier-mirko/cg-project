@@ -69,109 +69,6 @@ v3f32_cross(Vec3F32 a, Vec3F32 b)
   return result;
 }
 
-
-// 4d vector
-function Vec4F32
-v4f32(F32 x, F32 y, F32 z, F32 w)
-{
-  Vec4F32 v = {x, y, z, w};
-  return v;
-}
-
-function Vec4F32 
-v4f32_add(Vec4F32 a, Vec4F32 b)
-{
-  Vec4F32 v = {a.x+b.x, a.y+b.y, a.z+b.z, a.w+b.w};
-  return v;
-}
-
-function Vec4F32
-v4f32_sub(Vec4F32 a, Vec4F32 b)
-{
-  Vec4F32 v = {a.x-b.x, a.y-b.y, a.z-b.z, a.w-b.w};
-  return v;
-}
-
-function Vec4F32
-v4f32_scale(Vec4F32 v, F32 s)
-{
-  Vec4F32 result = {v.x*s, v.y*s, v.z*s, v.w*s};
-  return result;
-}
-
-function F32
-v4f32_length(Vec4F32 v)
-{
-  F32 l = sqrt_f32(v.x*v.x + v.y*v.y + v.z*v.z + v.w*v.w);
-}
-
-function F32
-v4f32_dot(Vec4F32 a, Vec4F32 b)
-{
-  F32 x = a.x*b.x + a.y*b.y + a.z*b.z + a.w*b.w;
-  return x;
-}
-
-// range
-
-function Rng1S32 
-r1s32(S32 min, S32 max)
-{
-  if(min > max) { Swap(S32, min, max); }
-  Rng1S32 r = {min, max};
-  return r;
-}
-
-function B32
-r1s32_contains(Rng1S32 r, S32 x)
-{
-  B32 result = (r.min <= x && x <= r.max);
-  return result;
-}
-
-function S32
-r1s32_dim(Rng1S32 r)
-{
-  S32 result = r.max - r.min;
-  return result;
-}
-
-function S32
-r1s32_clamp(Rng1S32 r, S32 v)
-{
-  v = Clamp(r.min, v, r.max);
-  return v;
-}
-
-function Rng1F32
-r1f32(F32 min, F32 max)
-{
-  if(min > max) { Swap(F32, min, max); }
-  Rng1F32 r = {min, max};
-  return r;
-}
-
-function B32
-r1f32_contains(Rng1F32 r, F32 x)
-{
-  B32 result = (r.min <= x && x <= r.max);
-  return result;
-}
-
-function F32
-r1sf2_dim(Rng1F32 r)
-{
-  F32 result = r.max - r.min;
-  return result;
-}
-
-function F32
-r1f32_clamp(Rng1F32 r, F32 v)
-{
-  v = Clamp(r.min, v, r.max);
-  return v;
-}
-
 // mat4x4
 
 function Mat4x4F32
@@ -604,15 +501,6 @@ str8_cstring(U8 *cstr)
   return result;
 }
 
-function String16
-str16_cstring(U16 *cstr)
-{
-  U16 *opl = cstr;
-  for(;*opl; opl += 1);
-  String16 result = {cstr, (S64)(opl - cstr)};
-  return result;
-}
-
 function B32
 str8_match(String8 a, String8 b, StringMatchFlags flags)
 {
@@ -638,45 +526,6 @@ str8_match(String8 a, String8 b, StringMatchFlags flags)
       }
     }
   }
-  return result;
-}
-
-function String8
-str8_prefix(String8 str, S64 size)
-{
-  String8 result = {str.str, ClampTop(size, str.size)};
-  return result;
-}
-
-function String8 
-str8_postfix(String8 str, S64 size)
-{
-  S64 size_clamped = ClampTop(size, str.size);
-  S64 skip_to = str.size - size_clamped;
-  String8 result = {str.str + skip_to, size_clamped};
-  return result;
-}
-
-function String8
-str8_skip(String8 str, S64 amt)
-{
-  amt = ClampTop(amt, str.size);
-  // Hello World
-  String8 result = {str.str + amt, str.size - amt};
-  return result;
-}
-
-function String8 
-str8_chop(String8 str, S64 amt)
-{
-  String8 result = {str.str, str.size - ClampTop(amt, str.size)};
-  return result;
-}
-
-function String8
-str8_substr(String8 str, S64 first, S64 opl)
-{
-  String8 result = str8_span(str.str + first, str.str + opl);
   return result;
 }
 
@@ -725,70 +574,46 @@ str8_push_copy(Arena *arena, String8 string)
   return result;
 }
 
-function String8
-str8_pushfv(Arena *arena, const char *fmt, va_list args)
+function S32
+s32_from_str8(String8 str)
 {
-  va_list args2;
-  va_copy(args2, args);
+  U32 r = 0;
+  S32 sign = 1;
+  for(S64 i = 0; i < str.size; i += 1)
+  {
+    switch(str.str[i])
+    {
+      case '+': break;
+      case '-': sign = -1; break;
+      default: r = 10*r + str.str[i] - '0';
+    }
+  }
   
-  U64 needed_bytes = vsnprintf(0, 0, fmt, args2) + 1;
-  String8 result = {0};
-  result.str = push_array(arena, U8, needed_bytes);
-  result.size = vsnprintf((char*)result.str, needed_bytes, fmt, args2);
-  result.str[result.size] = 0;
-  va_end(args2);
-  return result;
+  return r*sign;
 }
 
-function String8 
-str8_pushf(Arena *arena, const char *fmt, ...)
+function F32
+f32_from_str8(String8 str)
 {
-  va_list args;
-  va_start(args, fmt);
-  String8 result = str8_pushfv(arena, fmt, args);
-  va_end(args);
-  return result;
-}
-
-function String8
-str8_push_concat(Arena *arena, String8 a, String8 b)
-{
-  S64 size = a.size + b.size + 1;
-  U8 *buffer = push_array(arena, U8, size);
-  U8 *ptr = buffer;
-  MemoryCopy(ptr, a.str, a.size);
-  ptr += a.size;
-  MemoryCopy(ptr, b.str, b.size);
-  ptr += b.size;
-  *ptr = 0;
-  String8 result = {buffer, size};
-  return result;
-}
-
-function String8
-str8_lower(Arena *arena, String8 str)
-{
-  String8 result;
-  result.str = push_array(arena, U8, str.size);
-  result.size = str.size;
-  for(S64 i = 0; i < result.size; i += 1)
+  float r = 0.f;
+  float sign = 1.f;
+  float exp = 0.f;
+  for(S64 i = 0; i < str.size; i += 1)
   {
-    result.str[i] = char_to_lower(str.str[i]);
+    switch(str.str[i])
+    {
+      case '+': break;
+      case '-': sign = -1; break;
+      case '.': exp = 1; break;
+      default: 
+      {
+        r = 10.f*r + (str.str[i] - '0');
+        exp *= 0.1f;
+      }
+    }
   }
-  return result;
-}
-
-function String8
-str8_upper(Arena *arena, String8 str)
-{
-  String8 result;
-  result.str = push_array(arena, U8, str.size);
-  result.size = str.size;
-  for(S64 i = 0; i < result.size; i += 1)
-  {
-    result.str[i] = char_to_upper(str.str[i]);
-  }
-  return result;
+  
+  return sign*r*(exp ? exp : 1.f);
 }
 
 function void 
@@ -799,129 +624,12 @@ str8_list_push_node(String8List *list, String8Node *node)
   list->total_size += node->string.size;
 }
 
-function void 
-str8_list_push_node_front(String8List *list, String8Node *node)
-{
-  DLLPushFront(list->first, list->last, node);
-  list->node_count += 1;
-  list->total_size += node->string.size;
-}
-
 function void
 str8_list_push(Arena *arena, String8List *list, String8 string)
 {
   String8Node *node = push_array(arena, String8Node, 1);
   node->string = string;
   str8_list_push_node(list, node);
-}
-
-function void
-str8_list_push_front(Arena *arena, String8List *list, String8 string)
-{
-  String8Node *node = push_array(arena, String8Node, 1);
-  node->string = string;
-  str8_list_push_node_front(list, node);
-}
-
-function void 
-str8_list_pushf(Arena *arena, String8List *list, const char *fmt, ...)
-{
-  va_list args;
-  va_start(args, fmt);
-  String8 string = str8_pushfv(arena, fmt, args);
-  str8_list_push(arena, list, string);
-  va_end(args);
-}
-
-function void 
-str8_list_push_frontf(Arena *arena, String8List *list, const char *fmt, ...)
-{
-  va_list args;
-  va_start(args, fmt);
-  String8 string = str8_pushfv(arena, fmt, args);
-  str8_list_push_front(arena, list, string);
-  va_end(args);
-}
-
-function String8
-str8_list_join(Arena *arena, String8List *list, String8Join *optional_join)
-{
-  String8Join nil_join = {0};
-  String8Join *join = optional_join;
-  if(!join)
-  {
-    join = &nil_join;
-  }
-  
-  S64 size = list->total_size 
-    + join->pre.size 
-    + (list->node_count>0 ? join->sep.size*(list->node_count-1):0)
-    + join->pos.size;
-  
-  U8 *str = push_array(arena, U8, size);
-  U8 *ptr = str;
-  
-  // emit pre
-  MemoryCopy(ptr, join->pre.str, join->pre.size);
-  ptr += join->pre.size;
-  
-  // emit  strings and sep
-  B32 is_mid = 0;
-  for(String8Node *n = list->first; n; n = n->next)
-  {
-    if(is_mid)
-    {
-      MemoryCopy(ptr, join->sep.str, join->sep.size);
-      ptr += join->sep.size;
-    }
-    
-    MemoryCopy(ptr, n->string.str, n->string.size);
-    ptr += n->string.size;
-    is_mid = 1;
-  }
-  
-  // emit pos
-  MemoryCopy(ptr, join->pos.str, join->pos.size);
-  ptr += join->pos.size;
-  
-  String8 result = str8(str, size);
-  return result;
-}
-
-function String8List
-str8_split(Arena *arena, String8 string, U8 *splits, S32 splits_count)
-{
-  String8List result = {0};
-  U8 *word_ptr = string.str;
-  U8 *ptr = word_ptr;
-  U8 *opl = string.str + string.size;
-  for(;ptr < opl; ptr += 1)
-  {
-    B32 is_split_byte = 0;
-    for(S32 i = 0; i < splits_count; i += 1)
-    {
-      if(*ptr == splits[i])
-      {
-        is_split_byte = 1;
-        break;
-      }
-    }
-    
-    if(is_split_byte)
-    {
-      if(word_ptr < ptr)
-      {
-        str8_list_push(arena, &result, str8_span(word_ptr, ptr));
-      }
-      word_ptr = ptr + 1;
-    }
-  }
-  
-  if(word_ptr < ptr)
-  {
-    str8_list_push(arena, &result, str8_span(word_ptr, ptr));
-  }
-  return result;
 }
 
 function Codepoint
@@ -1100,17 +808,6 @@ char_to_lower(U8 c)
   return result;
 }
 
-function U8
-char_to_upper(U8 c)
-{
-  U8 result = c;
-  if('a' <= c && c <= 'z')
-  {
-    result = c - 'a' + 'A';
-  }
-  return result;
-}
-
 function B32
 char_is_space(U8 c)
 {
@@ -1129,19 +826,12 @@ char_is_space(U8 c)
 ////////////////////////////////
 // Functions: OS init
 
-global U64 w32_ticks_per_second = 1;
 global Arena *w32_perm_arena    = 0;
 global String8List w32_cmd_line = {0};
 
 function void 
 os_main_init(int argc, char **argv)
 {
-  // precision time
-  LARGE_INTEGER perf_freq = {0};
-  if(QueryPerformanceFrequency(&perf_freq))
-  {
-    w32_ticks_per_second = ((U64)perf_freq.HighPart << 32) | perf_freq.LowPart;
-  }
   
   w32_perm_arena = arena_alloc(.reserve_size = GB(24));
   
