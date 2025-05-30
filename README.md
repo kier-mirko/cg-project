@@ -16,3 +16,9 @@ If everything is set up correctly, you can build the project by going to the roo
 ```batch
 build.bat
 ```
+
+## How to build for Linux
+Go to the project root directory and run:
+```sh
+./build.sh
+```
