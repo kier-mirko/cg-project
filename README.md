@@ -18,6 +18,10 @@ build.bat
 ```
 
 ## How to build for Linux
+
+>[!WARNING]
+>The project was tested only on WSL2
+
 Go to the project root directory and run:
 ```sh
 ./build.sh
