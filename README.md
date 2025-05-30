@@ -24,5 +24,6 @@ build.bat
 
 Go to the project root directory and run:
 ```sh
+chmod +x ./build.sh
 ./build.sh
 ```
