@@ -261,3 +261,45 @@ gl_vertex_array_from_obj(Arena *arena, ObjModel model)
   result.count = count;
   return result;
 }
+
+function Mesh
+mesh_from_obj_model(Arena *arena, ObjModel model)
+{
+  GLVertexArray vertices = gl_vertex_array_from_obj(arena, model);
+  GLuint vao = 0;
+  GLuint vbo = 0;
+  
+  glEnable(GL_DEPTH_TEST);
+  
+  glGenVertexArrays(1, &vao);
+  glGenBuffers(1, &vbo);
+  
+  glBindVertexArray(vao);
+  
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, vertices.count*sizeof(GLVertex), vertices.data, GL_STATIC_DRAW);
+  
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLVertex), (void*)OffsetOfMember(GLVertex, pos));
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GLVertex), (void*)OffsetOfMember(GLVertex, norm));
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(GLVertex), (void*)OffsetOfMember(GLVertex, text));
+  glEnableVertexAttribArray(2);
+  
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
+  
+  Mesh result = {0};
+  result.vertices = vertices;
+  result.vao = vao;
+  result.vbo = vbo;
+  return result;
+}
+
+function void 
+mesh_draw(Mesh mesh)
+{
+  glBindVertexArray(mesh.vao);
+  glDrawArrays(GL_TRIANGLES, 0, (GLsizei)(mesh.vertices.count));
+  glBindVertexArray(0);
+}

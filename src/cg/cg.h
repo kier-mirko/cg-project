@@ -50,6 +50,14 @@ struct GLVertexArray
   S64 count;
 };
 
+typedef struct Mesh Mesh;
+struct Mesh
+{
+  GLVertexArray vertices;
+  GLuint vao;
+  GLuint vbo;
+};
+
 ////////////////////////////////
 // Functions: Shader
 
@@ -65,5 +73,11 @@ function Vec3F32 obj_parse_v3f32(String8 str);
 function ObjFace obj_parse_face(String8 str, S64 verts_count, S64 norms_count, S64 textures_count);
 function ObjModel obj_parse(Arena *arena, String8 obj);
 function GLVertexArray gl_vertex_array_from_obj(Arena *arena, ObjModel model);
+
+////////////////////////////////
+// Functions: Model
+
+function Mesh mesh_from_obj_model(Arena *arena, ObjModel model);
+function void mesh_draw(Mesh mesh);
 
 #endif //CG_H

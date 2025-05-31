@@ -81,7 +81,7 @@ main(int argc, char **argv)
   Arena *arena = arena_alloc();
   String8 obj = os_file_read(arena, str8_lit("model/bmw.obj"));
   ObjModel model = obj_parse(arena, obj);
-  GLVertexArray vertices = gl_vertex_array_from_obj(arena, model);
+  
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -98,37 +98,18 @@ main(int argc, char **argv)
       GLuint frag_shader = ogl_make_shader(frag_src, GL_FRAGMENT_SHADER);
       GLuint program = ogl_make_program((GLuint[]){vertex_shader, frag_shader}, 2);
       
-      GLuint vao;
-      GLuint vbo;
-      
-      glGenVertexArrays(1, &vao);
-      glGenBuffers(1, &vbo);
-      
-      glBindVertexArray(vao);
-      
-      glBindBuffer(GL_ARRAY_BUFFER, vbo);
-      glBufferData(GL_ARRAY_BUFFER, vertices.count*sizeof(GLVertex), vertices.data, GL_STATIC_DRAW);
-      
-      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLVertex), (void*)OffsetOfMember(GLVertex, pos));
-      glEnableVertexAttribArray(0);
-      glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GLVertex), (void*)OffsetOfMember(GLVertex, norm));
-      glEnableVertexAttribArray(1);
-      glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(GLVertex), (void*)OffsetOfMember(GLVertex, text));
-      glEnableVertexAttribArray(2);
-      
-      glBindBuffer(GL_ARRAY_BUFFER, 0);
-      glBindVertexArray(0);
+      Mesh mesh = mesh_from_obj_model(arena, model);
       
       // find model center and scale
       F32 center[3] = {0};
       F32 min[3] = {+FLT_MAX, +FLT_MAX, +FLT_MAX};
       F32 max[3] = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
       F32 scale = FLT_MAX;
-      for(S64 t = 0; t < vertices.count; t += 1)
+      for(S64 t = 0; t < mesh.vertices.count; t += 1)
       {
         for(S32 i = 0; i < 3; i += 1)
         {
-          F32 r = vertices.data[t].pos.v[i];
+          F32 r = mesh.vertices.data[t].pos.v[i];
           min[i] = min[i]<r ? min[i] : r;
           max[i] = max[i]>r ? max[i] : r;
         }
@@ -141,11 +122,9 @@ main(int argc, char **argv)
       }
       
       printf("%d triangles [%+.2g %+.2g %+.2g] x%.3g\n",
-             (S32)vertices.count,
+             (S32)mesh.vertices.count,
              (F64)center[0], (F64)center[1], (F64)center[2],
              (F64)scale);
-      
-      glEnable(GL_DEPTH_TEST);
       
       Vec3F32 light_pos = v3f32(3.f, 3.f, 2.f);
       Vec3F32 view_pos = v3f32(0.f, 0.f, 3.f);
@@ -181,8 +160,7 @@ main(int argc, char **argv)
         ogl_shader_set_3fv(program, "lightColor", 1, light_color.v);
         ogl_shader_set_3fv(program, "objectColor", 1, object_color.v);
         
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, (S32)(vertices.count));
+        mesh_draw(mesh);
         
         glfwSwapBuffers(window);
         glfwPollEvents();
