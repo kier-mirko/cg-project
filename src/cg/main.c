@@ -4,6 +4,8 @@
 #include "cg.h"
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 #include "base.c"
 #include "cg.c"
@@ -84,7 +86,6 @@ main(int argc, char **argv)
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  
   GLFWwindow *window = glfwCreateWindow(width, height, "Computer Graphics", 0, 0);
   if(window)
   {
@@ -96,6 +97,7 @@ main(int argc, char **argv)
       GLuint vertex_shader = ogl_make_shader(vertex_src, GL_VERTEX_SHADER);
       GLuint frag_shader = ogl_make_shader(frag_src, GL_FRAGMENT_SHADER);
       GLuint program = ogl_make_program((GLuint[]){vertex_shader, frag_shader}, 2);
+      
       GLuint vao;
       GLuint vbo;
       
@@ -138,22 +140,12 @@ main(int argc, char **argv)
         scale = scale<size ? scale : size;
       }
       
-      
       printf("%d triangles [%+.2g %+.2g %+.2g] x%.3g\n",
              (S32)vertices.count,
              (F64)center[0], (F64)center[1], (F64)center[2],
              (F64)scale);
       
       glEnable(GL_DEPTH_TEST);
-      glViewport(0, 0, 1280, 720);
-      
-      GLuint model_loc        = glGetUniformLocation(program, "model");
-      GLuint view_loc         = glGetUniformLocation(program, "view");
-      GLuint projection_loc   = glGetUniformLocation(program, "projection");
-      GLuint light_pos_loc    = glGetUniformLocation(program, "lightPos");
-      GLuint view_pos_loc     = glGetUniformLocation(program, "viewPos");
-      GLuint light_color_loc  = glGetUniformLocation(program, "lightColor");
-      GLuint object_color_loc = glGetUniformLocation(program, "objectColor");
       
       Vec3F32 light_pos = v3f32(3.f, 3.f, 2.f);
       Vec3F32 view_pos = v3f32(0.f, 0.f, 3.f);
@@ -176,18 +168,18 @@ main(int argc, char **argv)
         
         Mat4x4F32 t = m4x4f32_make_translate(v3f32(-center[0], -center[1], -center[2]));
         Mat4x4F32 s = m4x4f32_make_scale(v3f32(1.0f/scale, 1.0f/scale, 1.0f/scale));
-        F32 rotation = (F32)((U64)((glfwGetTime() * 100.0)) % (30 * 360)) / 30;
-        Mat4x4F32 r = m4x4f32_make_rotate(v3f32(0.f, 1.f, 0.f), rotation);
+        F32 rotation = (F32)((U64)(glfwGetTime() * 1000.0) % (30 * 360)) / 30;
+        Mat4x4F32 r = m4x4f32_make_rotate(v3f32(0.f, 1.f, 0.f), radians_from_degrees_f32(rotation));
         Mat4x4F32 model = m4x4f32_mul(m4x4f32_mul(t, s), r);
         
-        glUniformMatrix4fv(model_loc, 1, GL_TRUE, &model.v[0][0]);
-        glUniformMatrix4fv(view_loc, 1, GL_TRUE, &view.v[0][0]);
-        glUniformMatrix4fv(projection_loc, 1, GL_FALSE, &projection.v[0][0]);
+        ogl_shader_set_matrix4fv(program, "model", &model.v[0][0]);
+        ogl_shader_set_matrix4fv(program, "view", &view.v[0][0]);
+        ogl_shader_set_matrix4fv(program, "projection", &projection.v[0][0]);
         
-        glUniform3fv(light_pos_loc, 1, light_pos.v);
-        glUniform3fv(view_pos_loc, 1, view_pos.v);
-        glUniform3fv(light_color_loc, 1, light_color.v);
-        glUniform3fv(object_color_loc, 1, object_color.v);
+        ogl_shader_set_3fv(program, "lightPos", 1, light_pos.v);
+        ogl_shader_set_3fv(program, "viewPos", 1, view_pos.v);
+        ogl_shader_set_3fv(program, "lightColor", 1, light_color.v);
+        ogl_shader_set_3fv(program, "objectColor", 1, object_color.v);
         
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, (S32)(vertices.count));

@@ -95,6 +95,20 @@ ogl_make_program(GLuint *shaders, S32 count)
   return result;
 }
 
+function void
+ogl_shader_set_3fv(GLuint program, char *name, GLsizei count, GLfloat *value)
+{
+  GLint location = glGetUniformLocation(program, name);
+  glUniform3fv(location, count, value);
+}
+
+function void
+ogl_shader_set_matrix4fv(GLuint program, char *name, GLfloat *value)
+{
+  GLint location = glGetUniformLocation(program, name);
+  glUniformMatrix4fv(location, 1, GL_FALSE, value);
+}
+
 
 function Vec3F32
 obj_parse_v3f32(String8 str)
@@ -124,7 +138,6 @@ obj_parse_face(String8 str, S64 verts_count, S64 norms_count, S64 textures_count
     result.t[i] = s32_from_str8(element.head);
     element = str8_cut(element.tail, '/');
     result.n[i] = s32_from_str8(element.head);
-    
     if(result.v[i] < 0)
     {
       result.v[i] = (S32)(result.v[i] + 1 + verts_count);
@@ -215,14 +228,22 @@ gl_vertex_array_from_obj(Arena *arena, ObjModel model)
   
   result.data = push_array(arena, GLVertex, model.faces_count*3);
   S64 count = 0;
+  B32 have_normals = (model.norms_count != 0);
+  B32 have_textures = (model.textures_count != 0);
   for(S64 f = 0; f < model.faces_count; f += 1)
   {
     B32 valid = 1;
     for(S32 i = 0; i < 3; i += 1)
     {
       valid &= (model.faces[f].v[i]>0 && model.faces[f].v[i]<=model.verts_count);
-      valid &= (model.faces[f].n[i]>0 && model.faces[f].n[i]<=model.norms_count);
-      valid &= (model.faces[f].t[i]>=0 && model.faces[f].t[i]<=model.textures_count);
+      if(have_normals)
+      {
+        valid &= (model.faces[f].n[i]>0 && model.faces[f].n[i]<=model.norms_count);
+      }
+      if(have_textures)
+      {
+        valid &= (model.faces[f].t[i]>=0 && model.faces[f].t[i]<=model.textures_count);
+      }
     }
     
     if(valid)

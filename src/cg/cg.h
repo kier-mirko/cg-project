@@ -55,6 +55,8 @@ struct GLVertexArray
 
 function GLuint ogl_make_shader(char *src, GLenum kind);
 function GLuint ogl_make_program(GLuint *shaders, S32 count);
+function void   ogl_shader_set_3fv(GLuint program, char *name, GLsizei count, GLfloat *value);
+function void   ogl_shader_set_matrix4fv(GLuint program, char *name, GLfloat *value);
 
 ////////////////////////////////
 // Functions: OBJ Parser

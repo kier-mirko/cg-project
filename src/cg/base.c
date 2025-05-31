@@ -86,9 +86,9 @@ function Mat4x4F32
 m4x4f32_make_translate(Vec3F32 delta)
 {
   Mat4x4F32 m = m4x4f32(1.f);
-  m.v[0][3] = delta.x;
-  m.v[1][3] = delta.y;
-  m.v[2][3] = delta.z;
+  m.v[3][0] = delta.x;
+  m.v[3][1] = delta.y;
+  m.v[3][2] = delta.z;
   return m;
 }
 
@@ -142,14 +142,14 @@ function Mat4x4F32
 m4x4f32_mul(Mat4x4F32 a, Mat4x4F32 b)
 {
   Mat4x4F32 c = {0};
-  for(S32 j = 0; j < 4; j += 1)
+  for(S32 i = 0; i < 4; i += 1)
   {
-    for(S32 i = 0; i < 4; i += 1)
+    for(S32 j = 0; j < 4; j += 1)
     {
-      c.v[i][j] = (a.v[0][j]*b.v[i][0] +
-                   a.v[1][j]*b.v[i][1] +
-                   a.v[2][j]*b.v[i][2] +
-                   a.v[3][j]*b.v[i][3]);
+      c.v[i][j] = (a.v[i][0]*b.v[0][j] +
+                   a.v[i][1]*b.v[1][j] +
+                   a.v[i][2]*b.v[2][j] +
+                   a.v[i][3]*b.v[3][j]);
     }
   }
   return c;
