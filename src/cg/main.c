@@ -13,6 +13,7 @@ char *vertex_src =
 "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
 "layout (location = 1) in vec3 aNorm;\n"
+"layout (location = 2) in vec3 aTexCoord;\n"
 "out vec3 vNorm;\n"
 "out vec3 vFragPos;\n"
 "uniform mat4 model;\n"
@@ -76,7 +77,7 @@ main(int argc, char **argv)
   S32 height = 720;
   
   Arena *arena = arena_alloc();
-  String8 obj = os_file_read(arena, str8_lit("model/suzanne.obj"));
+  String8 obj = os_file_read(arena, str8_lit("model/bmw.obj"));
   ObjModel model = obj_parse(arena, obj);
   GLVertexArray vertices = gl_vertex_array_from_obj(arena, model);
   glfwInit();
@@ -92,43 +93,9 @@ main(int argc, char **argv)
     {
       glfwSetFramebufferSizeCallback(window, framebuffer_resize);
       
-      unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-      glShaderSource(vertex_shader, 1, &vertex_src, 0);
-      glCompileShader(vertex_shader);
-      
-      int success;
-      char infoLog[512];
-      glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
-      if (!success)
-      {
-        glGetShaderInfoLog(vertex_shader, 512, NULL, infoLog);
-        printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n %s\n", infoLog);
-      }
-      
-      unsigned int frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
-      glShaderSource(frag_shader, 1, &frag_src, 0);
-      glCompileShader(frag_shader);
-      glGetShaderiv(frag_shader, GL_COMPILE_STATUS, &success);
-      if (!success)
-      {
-        glGetShaderInfoLog(frag_shader, 512, NULL, infoLog);
-        printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n %s\n", infoLog);
-      }
-      
-      unsigned int shader_program = glCreateProgram();
-      glAttachShader(shader_program, vertex_shader);
-      glAttachShader(shader_program, frag_shader);
-      glLinkProgram(shader_program);
-      glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
-      if (!success)
-      {
-        glGetProgramInfoLog(shader_program, 512, NULL, infoLog);
-        printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n %s\n", infoLog);
-      }
-      
-      glDeleteShader(vertex_shader);
-      glDeleteShader(frag_shader);
-      
+      GLuint vertex_shader = ogl_make_shader(vertex_src, GL_VERTEX_SHADER);
+      GLuint frag_shader = ogl_make_shader(frag_src, GL_FRAGMENT_SHADER);
+      GLuint program = ogl_make_program((GLuint[]){vertex_shader, frag_shader}, 2);
       GLuint vao;
       GLuint vbo;
       
@@ -144,6 +111,8 @@ main(int argc, char **argv)
       glEnableVertexAttribArray(0);
       glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GLVertex), (void*)OffsetOfMember(GLVertex, norm));
       glEnableVertexAttribArray(1);
+      glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(GLVertex), (void*)OffsetOfMember(GLVertex, text));
+      glEnableVertexAttribArray(2);
       
       glBindBuffer(GL_ARRAY_BUFFER, 0);
       glBindVertexArray(0);
@@ -178,13 +147,13 @@ main(int argc, char **argv)
       glEnable(GL_DEPTH_TEST);
       glViewport(0, 0, 1280, 720);
       
-      GLuint model_loc = glGetUniformLocation(shader_program, "model");
-      GLuint view_loc = glGetUniformLocation(shader_program, "view");
-      GLuint projection_loc = glGetUniformLocation(shader_program, "projection");
-      GLuint light_pos_loc = glGetUniformLocation(shader_program, "lightPos");
-      GLuint view_pos_loc = glGetUniformLocation(shader_program, "viewPos");
-      GLuint light_color_loc = glGetUniformLocation(shader_program, "lightColor");
-      GLuint object_color_loc = glGetUniformLocation(shader_program, "objectColor");
+      GLuint model_loc        = glGetUniformLocation(program, "model");
+      GLuint view_loc         = glGetUniformLocation(program, "view");
+      GLuint projection_loc   = glGetUniformLocation(program, "projection");
+      GLuint light_pos_loc    = glGetUniformLocation(program, "lightPos");
+      GLuint view_pos_loc     = glGetUniformLocation(program, "viewPos");
+      GLuint light_color_loc  = glGetUniformLocation(program, "lightColor");
+      GLuint object_color_loc = glGetUniformLocation(program, "objectColor");
       
       Vec3F32 light_pos = v3f32(3.f, 3.f, 2.f);
       Vec3F32 view_pos = v3f32(0.f, 0.f, 3.f);
@@ -203,7 +172,7 @@ main(int argc, char **argv)
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        glUseProgram(shader_program);
+        glUseProgram(program);
         
         Mat4x4F32 t = m4x4f32_make_translate(v3f32(-center[0], -center[1], -center[2]));
         Mat4x4F32 s = m4x4f32_make_scale(v3f32(1.0f/scale, 1.0f/scale, 1.0f/scale));

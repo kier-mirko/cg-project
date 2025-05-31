@@ -142,14 +142,14 @@ function Mat4x4F32
 m4x4f32_mul(Mat4x4F32 a, Mat4x4F32 b)
 {
   Mat4x4F32 c = {0};
-  for(S32 i = 0; i < 4; i += 1)
+  for(S32 j = 0; j < 4; j += 1)
   {
-    for(S32 j = 0; j < 4; j += 1)
+    for(S32 i = 0; i < 4; i += 1)
     {
-      c.v[i][j] = (a.v[i][0]*b.v[0][j] +
-                   a.v[i][1]*b.v[1][j] +
-                   a.v[i][2]*b.v[2][j] +
-                   a.v[i][3]*b.v[3][j]);
+      c.v[i][j] = (a.v[0][j]*b.v[i][0] +
+                   a.v[1][j]*b.v[i][1] +
+                   a.v[2][j]*b.v[i][2] +
+                   a.v[3][j]*b.v[i][3]);
     }
   }
   return c;
