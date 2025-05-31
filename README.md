@@ -11,8 +11,7 @@ Copyright (C) Microsoft Corporation.  All rights reserved.
 
 usage: cl [ option... ] filename... [ /link linkoption... ]
 ```
-
-If everything is set up correctly, you can build the project by going to the root directory of the project and run:
+To build the project, go to the project root directory and run:
 ```batch
 build.bat
 ```
