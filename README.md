@@ -11,8 +11,9 @@ Copyright (C) Microsoft Corporation.  All rights reserved.
 
 usage: cl [ option... ] filename... [ /link linkoption... ]
 ```
+If don't have a `x64 Native Tools Command Prompt for <year>`. Install Visual Studio Community 2022 and in the installer click the option `Desktop Development with C++` in the workload section.
 
-If everything is set up correctly, you can build the project by going to the root directory of the project and run:
+To build the project, go to the project root directory and run:
 ```batch
 build.bat
 ```
