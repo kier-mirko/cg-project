@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <float.h>
 #include "base.h"
 #include "cg.h"
 #include "glad/glad.h"
@@ -75,24 +74,25 @@ main(int argc, char **argv)
   os_main_init(argc, argv);
   int result = 0;
   
-  S32 width = 1280;
-  S32 height = 720;
-  
   Arena *arena = arena_alloc();
-  String8 obj = os_file_read(arena, str8_lit("model/bmw.obj"));
-  ObjModel model = obj_parse(arena, obj);
+  
+  S32 window_width = 1280;
+  S32 window_height = 720;
   
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  GLFWwindow *window = glfwCreateWindow(width, height, "Computer Graphics", 0, 0);
+  GLFWwindow *window = glfwCreateWindow(window_width, window_height, "Computer Graphics", 0, 0);
   if(window)
   {
     glfwMakeContextCurrent(window);
     if(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
       glfwSetFramebufferSizeCallback(window, framebuffer_resize);
+      
+      String8 obj = os_file_read(arena, str8_lit("model/bmw.obj"));
+      ObjModel model = obj_parse(arena, obj);
       
       GLuint vertex_shader = ogl_make_shader(vertex_src, GL_VERTEX_SHADER);
       GLuint frag_shader = ogl_make_shader(frag_src, GL_FRAGMENT_SHADER);
@@ -102,9 +102,9 @@ main(int argc, char **argv)
       
       // find model center and scale
       F32 center[3] = {0};
-      F32 min[3] = {+FLT_MAX, +FLT_MAX, +FLT_MAX};
-      F32 max[3] = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
-      F32 scale = FLT_MAX;
+      F32 min[3] = {inf_F32, inf_F32, inf_F32};
+      F32 max[3] = {neg_inf_F32, neg_inf_F32, neg_inf_F32};
+      F32 scale = inf_F32;
       for(S64 t = 0; t < mesh.vertices.count; t += 1)
       {
         for(S32 i = 0; i < 3; i += 1)
