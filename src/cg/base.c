@@ -301,8 +301,8 @@ memory_move(void *dst, void *src, U64 size)
     for(;z8 > 0;)
     {
       *dst8 = *src8;
-      dst64 += 1;
-      src64 += 1;
+      dst8 += 1;
+      src8 += 1;
       z8 -= 1;
     }
   }
