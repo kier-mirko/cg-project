@@ -171,14 +171,15 @@ obj_parse_group(String8 str)
   return result;
 }
 
-function S64
-obj_parse_mtllib(Arena *arena, String8 str, OBJMaterial *materials_out)
+function void
+obj_parse_mtllib(Arena *arena, String8 str, OBJMaterialList *mtl_list)
 {
-  Temp scratch = scratch_begin(0, 0);
+  Temp scratch = scratch_begin(&arena, 1);
   String8 file_name = str8_trim_left(str);
   String8 content = os_file_read(scratch.arena, str8_push_cat(scratch.arena, str8_lit("model/"), file_name));
   
-  S64 materials_count = 0;
+  OBJMaterialNode *mtl = 0;
+  
   String8Cut lines = {0};
   lines.tail = content;
   while(lines.tail.size)
@@ -188,53 +189,55 @@ obj_parse_mtllib(Arena *arena, String8 str, OBJMaterial *materials_out)
     String8 kind = fields.head;
     if(str8_match(kind, str8_lit("newmtl"), 0))
     {
-      materials_out[materials_count].name = str8_trim_left(fields.tail);
-      materials_count += 1;
+      OBJMaterialNode *node = push_array(arena, OBJMaterialNode, 1);
+      node->material.name = str8_trim_left(fields.tail);
+      SLLQueuePush(mtl_list->first, mtl_list->last, node);
+      mtl_list->count += 1;
+      mtl = node;
     }
     else if(str8_match(kind, str8_lit("Ka"), 0))
     {
-      materials_out[materials_count-1].Ka = obj_parse_v3f32(fields.tail);
+      mtl->material.Ka = obj_parse_v3f32(fields.tail);
     }
     else if(str8_match(kind, str8_lit("Kd"), 0))
     {
-      materials_out[materials_count-1].Kd = obj_parse_v3f32(fields.tail);
+      mtl->material.Kd = obj_parse_v3f32(fields.tail);
     }
     else if(str8_match(kind, str8_lit("Ks"), 0))
     {
-      materials_out[materials_count-1].Ks = obj_parse_v3f32(fields.tail);
+      mtl->material.Ks = obj_parse_v3f32(fields.tail);
     }
     else if(str8_match(kind, str8_lit("Ke"), 0))
     {
-      materials_out[materials_count-1].Ke = obj_parse_v3f32(fields.tail);
+      mtl->material.Ke = obj_parse_v3f32(fields.tail);
     }
     else if(str8_match(kind, str8_lit("Kt"), 0))
     {
-      materials_out[materials_count-1].Kt = obj_parse_v3f32(fields.tail);
+      mtl->material.Kt = obj_parse_v3f32(fields.tail);
     }
     else if(str8_match(kind, str8_lit("Ns"), 0))
     {
-      materials_out[materials_count-1].Ns = f32_from_str8(str8_trim_left(fields.tail));
+      mtl->material.Ns = f32_from_str8(str8_trim_left(fields.tail));
     }
     else if(str8_match(kind, str8_lit("Ni"), 0))
     {
-      materials_out[materials_count-1].Ni = f32_from_str8(str8_trim_left(fields.tail));
+      mtl->material.Ni = f32_from_str8(str8_trim_left(fields.tail));
     }
     else if(str8_match(kind, str8_lit("Tf"), 0))
     {
-      materials_out[materials_count-1].Tf = obj_parse_v3f32(fields.tail);
+      mtl->material.Tf = obj_parse_v3f32(fields.tail);
     }
     else if(str8_match(kind, str8_lit("d"), 0))
     {
-      materials_out[materials_count].d = f32_from_str8(str8_trim_left(fields.tail));
+      mtl->material.d = f32_from_str8(str8_trim_left(fields.tail));
     }
     else if(str8_match(kind, str8_lit("illum"), 0))
     {
-      materials_out[materials_count].illum = f32_from_str8(str8_trim_left(fields.tail));
+      mtl->material.illum = f32_from_str8(str8_trim_left(fields.tail));
     }
   }
   
   scratch_end(scratch);
-  return materials_count;
 }
 
 function OBJ 
@@ -284,6 +287,8 @@ obj_parse(Arena *arena, String8 obj)
   
   m.mesh.verts_count = m.mesh.norms_count = m.mesh.textures_count = 0;
   m.mesh.faces_count = m.mesh.objects_count = m.mesh.groups_count = 0;
+  
+  OBJMaterialList mtl_list = {0};
   
   lines.tail = obj;
   while(lines.tail.size)
@@ -335,8 +340,29 @@ obj_parse(Arena *arena, String8 obj)
     }
     else if(str8_match(kind, str8_lit("mtllib"), 0))
     {
-      m.mesh.materials_count += obj_parse_mtllib(arena, fields.tail, m.mesh.materials);
+      obj_parse_mtllib(arena, fields.tail, &mtl_list);
     }
+  }
+  
+  // put last object
+  if(m.object.faces_count > 0)
+  {
+    m.mesh.objects[m.mesh.objects_count] = m.object;
+    m.mesh.objects_count += 1;
+  }
+  
+  // put last group
+  if(m.group.faces_count > 0)
+  {
+    m.mesh.groups[m.mesh.groups_count] = m.group;
+    m.mesh.groups_count += 1;
+  }
+  
+  m.mesh.materials = push_array(arena, OBJMaterial, mtl_list.count);
+  for(OBJMaterialNode *n = mtl_list.first; n; n = n->next)
+  {
+    m.mesh.materials[m.mesh.materials_count] = n->material;
+    m.mesh.materials_count += 1;
   }
   
   return m;

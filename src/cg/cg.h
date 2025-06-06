@@ -47,6 +47,21 @@ struct OBJMaterial
   B32 fallback;
 };
 
+typedef struct OBJMaterialNode OBJMaterialNode;
+struct OBJMaterialNode 
+{
+  OBJMaterialNode *next;
+  OBJMaterial material;
+};
+
+typedef struct OBJMaterialList OBJMaterialList;
+struct OBJMaterialList
+{
+  OBJMaterialNode *first;
+  OBJMaterialNode *last;
+  S64 count;
+};
+
 typedef struct OBJMesh OBJMesh;
 struct OBJMesh
 {
@@ -113,7 +128,7 @@ function Vec3F32  obj_parse_v3f32(String8 str);
 function OBJFace  obj_parse_face(String8 str, S64 verts_count, S64 norms_count, S64 textures_count);
 function OBJGroup obj_parse_object(String8 str);
 function OBJGroup obj_parse_group(String8 str);
-function S64      obj_parse_mtlllib(Arena *arena, String8 str, OBJMaterial *material_out);
+function void     obj_parse_mtlllib(Arena *arena, String8 str, OBJMaterialList *mtl_list);
 function OBJ      obj_parse(Arena *arena, String8 obj);
 function GLVertexArray gl_vertex_array_from_obj(Arena *arena, OBJ model);
 
