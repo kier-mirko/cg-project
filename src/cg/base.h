@@ -237,7 +237,7 @@
 #define SLLQueuePush_NZ(f,l,n,next,nil)\
 (((f)==(nil))?\
 ((f)=(l)=(n),(n)->next=(nil)):\
-((l)->next(n),(l)=(n),(n)->next=(nil)))
+((l)->next=(n),(l)=(n),(n)->next=(nil)))
 #define SLLQueuePush(f,l,n) SLLQueuePush_NZ(f,l,n,next,0)
 
 #define SLLQueuePushFront_NZ(f,l,n,next,nil)\
