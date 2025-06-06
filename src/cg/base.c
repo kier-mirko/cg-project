@@ -111,13 +111,13 @@ m4x4f32_make_rotate(Vec3F32 axis, F32 turns)
   F32 cos_theta = cos_f32(turns);
   F32 cos_value = 1.f - cos_theta;
   m.v[0][0] = (axis.x * axis.x * cos_value) + cos_theta;
-  m.v[0][1] = (axis.x * axis.y * cos_value) - (axis.z * sin_theta);
-  m.v[0][2] = (axis.x * axis.z * cos_value) + (axis.y * sin_theta);
-  m.v[1][0] = (axis.y * axis.x * cos_value) + (axis.z * sin_theta);
+  m.v[1][0] = (axis.x * axis.y * cos_value) - (axis.z * sin_theta);
+  m.v[2][0] = (axis.x * axis.z * cos_value) + (axis.y * sin_theta);
+  m.v[0][1] = (axis.y * axis.x * cos_value) + (axis.z * sin_theta);
   m.v[1][1] = (axis.y * axis.y * cos_value) + cos_theta;
-  m.v[1][2] = (axis.y * axis.z * cos_value) - (axis.x * sin_theta);
-  m.v[2][0] = (axis.z * axis.x * cos_value) - (axis.y * sin_theta);
-  m.v[2][1] = (axis.z * axis.y * cos_value) + (axis.x * sin_theta);
+  m.v[2][1] = (axis.y * axis.z * cos_value) - (axis.x * sin_theta);
+  m.v[0][2] = (axis.z * axis.x * cos_value) - (axis.y * sin_theta);
+  m.v[1][2] = (axis.z * axis.y * cos_value) + (axis.x * sin_theta);
   m.v[2][2] = (axis.z * axis.z * cos_value) + cos_theta;
   return m;
 }
