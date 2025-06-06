@@ -123,10 +123,10 @@ obj_parse_v3f32(String8 str)
   return v;
 }
 
-function ObjFace
+function OBJFace
 obj_parse_face(String8 str, S64 verts_count, S64 norms_count, S64 textures_count)
 {
-  ObjFace result = {0};
+  OBJFace result = {0};
   String8Cut fields = {0};
   fields.tail = str;
   for(S32 i = 0; i < 3; i += 1)
@@ -151,13 +151,30 @@ obj_parse_face(String8 str, S64 verts_count, S64 norms_count, S64 textures_count
       result.t[i] = (S32)(result.t[i] + 1 + textures_count);
     }
   }
+  
+  return result;
+}
+
+function OBJGroup
+obj_parse_object(String8 str)
+{
+  OBJGroup result = {0};
+  result.name = str8_trim_left(str);
+  return result;
+}
+
+function OBJGroup
+obj_parse_group(String8 str)
+{
+  OBJGroup result = {0};
+  result.name = str8_trim_left(str);
   return result;
 }
 
 function ObjModel 
 obj_parse(Arena *arena, String8 obj)
 {
-  ObjModel m = {0};
+  OBJ m = {0};
   String8Cut lines = {0};
   
   lines.tail = obj;
@@ -168,27 +185,45 @@ obj_parse(Arena *arena, String8 obj)
     String8 kind = fields.head;
     if(str8_match(kind, str8_lit("v"), 0))
     {
-      m.verts_count += 1;
+      m.mesh.verts_count += 1;
     }
     else if(str8_match(kind, str8_lit("vn"), 0))
     {
-      m.norms_count += 1;
+      m.mesh.norms_count += 1;
     }
     else if(str8_match(kind, str8_lit("vt"), 0))
     {
-      m.textures_count += 1;
+      m.mesh.textures_count += 1;
     }
     else if(str8_match(kind, str8_lit("f"), 0))
     {
-      m.faces_count += 1;
+      m.mesh.faces_count += 1;
+    }
+    else if(str8_match(kind, str8_lit("o"), 0))
+    {
+      m.mesh.objects_count += 1;
+    }
+    else if(str8_match(kind, str8_lit("g"), 0))
+    {
+      m.mesh.groups_count += 1;
+    }
+    else if(str8_match(kind, str8_lit("usemtl"), 0))
+    {
+      m.mesh.materials_count += 1;
     }
   }
   
-  m.verts    = push_array(arena, Vec3F32, m.verts_count);
-  m.norms    = push_array(arena, Vec3F32, m.norms_count);
-  m.textures = push_array(arena, Vec3F32, m.textures_count);
-  m.faces    = push_array(arena, ObjFace, m.faces_count);
-  m.verts_count = m.norms_count = m.textures_count = m.faces_count = 0;
+  m.mesh.verts     = push_array(arena, Vec3F32, m.mesh.verts_count);
+  m.mesh.norms     = push_array(arena, Vec3F32, m.mesh.norms_count);
+  m.mesh.textures  = push_array(arena, Vec3F32, m.mesh.textures_count);
+  m.mesh.faces     = push_array(arena, OBJFace, m.mesh.faces_count);
+  m.mesh.objects   = push_array(arena, OBJGroup, m.mesh.objects_count);
+  m.mesh.groups    = push_array(arena, OBJGroup, m.mesh.groups_count);
+  m.mesh.materials = push_array(arena, OBJMaterial, m.mesh.materials_count);
+  
+  m.mesh.verts_count = m.mesh.norms_count = m.mesh.textures_count = 0;
+  m.mesh.faces_count = m.mesh.objects_count = m.mesh.groups_count = 0;
+  m.mesh.materials_count = 0;
   
   lines.tail = obj;
   while(lines.tail.size)
@@ -198,23 +233,49 @@ obj_parse(Arena *arena, String8 obj)
     String8 kind = fields.head;
     if(str8_match(kind, str8_lit("v"), 0))
     {
-      m.verts[m.verts_count] = obj_parse_v3f32(fields.tail);
-      m.verts_count += 1;
+      m.mesh.verts[m.mesh.verts_count] = obj_parse_v3f32(fields.tail);
+      m.mesh.verts_count += 1;
     }
     else if(str8_match(kind, str8_lit("vn"), 0))
     {
-      m.norms[m.norms_count] = obj_parse_v3f32(fields.tail);
-      m.norms_count += 1;
+      m.mesh.norms[m.mesh.norms_count] = obj_parse_v3f32(fields.tail);
+      m.mesh.norms_count += 1;
     }
     else if(str8_match(kind, str8_lit("vt"), 0))
     {
-      m.textures[m.textures_count] = obj_parse_v3f32(fields.tail);
-      m.textures_count += 1;
+      m.mesh.textures[m.mesh.textures_count] = obj_parse_v3f32(fields.tail);
+      m.mesh.textures_count += 1;
     }
     else if(str8_match(kind, str8_lit("f"), 0))
     {
-      m.faces[m.faces_count] = obj_parse_face(fields.tail, m.verts_count, m.norms_count, m.textures_count);
-      m.faces_count += 1;
+      m.mesh.faces[m.mesh.faces_count] = obj_parse_face(fields.tail, m.mesh.verts_count, 
+                                                        m.mesh.norms_count, m.mesh.textures_count);
+      m.mesh.faces_count += 1;
+      m.object.faces_count += 1;
+      m.group.faces_count += 1;
+    }
+    else if(str8_match(kind, str8_lit("o"), 0))
+    {
+      if(m.object.faces_count > 0)
+      {
+        m.mesh.objects[m.mesh.objects_count] = m.object;
+        m.mesh.objects_count += 1;
+      }
+      m.object = obj_parse_object(fields.tail);
+      m.object.face_offset = m.mesh.faces_count;
+    }
+    else if(str8_match(kind, str8_lit("g"), 0))
+    {
+      if(m.group.faces_count > 0)
+      {
+        m.mesh.groups[m.mesh.groups_count] = m.group;
+        m.mesh.groups_count += 1;
+      }
+      m.group = obj_parse_group(fields.tail);
+    }
+    else if(str8_match(kind, str8_lit("mtllib"), 0))
+    {
+      m.mesh.materials_count += obj_parse_mtllib(arena, fields.tail, m.mesh.materials, m.mesh.materials_count);
     }
   }
   
@@ -222,27 +283,27 @@ obj_parse(Arena *arena, String8 obj)
 }
 
 function GLVertexArray
-gl_vertex_array_from_obj(Arena *arena, ObjModel model)
+gl_vertex_array_from_obj(Arena *arena, OBJ model)
 {
   GLVertexArray result = {0};
   
-  result.data = push_array(arena, GLVertex, model.faces_count*3);
+  result.data = push_array(arena, GLVertex, model.mesh.faces_count*3);
   S64 count = 0;
-  B32 have_normals = (model.norms_count != 0);
-  B32 have_textures = (model.textures_count != 0);
-  for(S64 f = 0; f < model.faces_count; f += 1)
+  B32 have_normals = (model.mesh.norms_count != 0);
+  B32 have_textures = (model.mesh.textures_count != 0);
+  for(S64 f = 0; f < model.mesh.faces_count; f += 1)
   {
     B32 valid = 1;
     for(S32 i = 0; i < 3; i += 1)
     {
-      valid &= (model.faces[f].v[i]>0 && model.faces[f].v[i]<=model.verts_count);
+      valid &= (model.mesh.faces[f].v[i]>0 && model.mesh.faces[f].v[i]<=model.mesh.verts_count);
       if(have_normals)
       {
-        valid &= (model.faces[f].n[i]>0 && model.faces[f].n[i]<=model.norms_count);
+        valid &= (model.mesh.faces[f].n[i]>0 && model.mesh.faces[f].n[i]<=model.mesh.norms_count);
       }
       if(have_textures)
       {
-        valid &= (model.faces[f].t[i]>=0 && model.faces[f].t[i]<=model.textures_count);
+        valid &= (model.mesh.faces[f].t[i]>=0 && model.mesh.faces[f].t[i]<=model.mesh.textures_count);
       }
     }
     
@@ -250,9 +311,9 @@ gl_vertex_array_from_obj(Arena *arena, ObjModel model)
     {
       for(S64 i = 0; i < 3; i += 1)
       {
-        result.data[count].norm = model.norms[model.faces[f].n[i]-1];
-        result.data[count].pos = model.verts[model.faces[f].v[i]-1];
-        result.data[count].text = model.textures[model.faces[f].t[i]-1];
+        result.data[count].norm = model.mesh.norms[model.mesh.faces[f].n[i]-1];
+        result.data[count].pos = model.mesh.verts[model.mesh.faces[f].v[i]-1];
+        result.data[count].text = model.mesh.textures[model.mesh.faces[f].t[i]-1];
         count += 1;
       }
     }
@@ -263,7 +324,7 @@ gl_vertex_array_from_obj(Arena *arena, ObjModel model)
 }
 
 function Mesh
-mesh_from_obj_model(Arena *arena, ObjModel model)
+mesh_from_obj_model(Arena *arena, OBJ model)
 {
   GLVertexArray vertices = gl_vertex_array_from_obj(arena, model);
   GLuint vao = 0;

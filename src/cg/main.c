@@ -8,7 +8,7 @@
 
 #include "base.c"
 #include "cg.c"
-#include "glad.c"
+#include "glad/glad.c"
 
 char *vertex_src =
 "#version 330 core\n"
@@ -92,7 +92,7 @@ main(int argc, char **argv)
       glfwSetFramebufferSizeCallback(window, framebuffer_resize);
       
       String8 obj = os_file_read(arena, str8_lit("model/bmw.obj"));
-      ObjModel model = obj_parse(arena, obj);
+      OBJ model = obj_parse(arena, obj);
       
       GLuint vertex_shader = ogl_make_shader(vertex_src, GL_VERTEX_SHADER);
       GLuint frag_shader = ogl_make_shader(frag_src, GL_FRAGMENT_SHADER);
