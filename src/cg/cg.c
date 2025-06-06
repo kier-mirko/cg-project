@@ -172,12 +172,13 @@ obj_parse_group(String8 str)
 }
 
 function S64
-obj_parse_mtllib(Arena *arena, String8 str, OBJMaterial *materials_out, S64 materials_count)
+obj_parse_mtllib(Arena *arena, String8 str, OBJMaterial *materials_out)
 {
   Temp scratch = scratch_begin(0, 0);
   String8 file_name = str8_trim_left(str);
   String8 content = os_file_read(scratch.arena, str8_push_cat(scratch.arena, str8_lit("model/"), file_name));
   
+  S64 materials_count = 0;
   String8Cut lines = {0};
   lines.tail = content;
   while(lines.tail.size)
@@ -272,10 +273,6 @@ obj_parse(Arena *arena, String8 obj)
     {
       m.mesh.groups_count += 1;
     }
-    else if(str8_match(kind, str8_lit("usemtl"), 0))
-    {
-      m.mesh.materials_count += 1;
-    }
   }
   
   m.mesh.verts     = push_array(arena, Vec3F32, m.mesh.verts_count);
@@ -284,11 +281,9 @@ obj_parse(Arena *arena, String8 obj)
   m.mesh.faces     = push_array(arena, OBJFace, m.mesh.faces_count);
   m.mesh.objects   = push_array(arena, OBJGroup, m.mesh.objects_count);
   m.mesh.groups    = push_array(arena, OBJGroup, m.mesh.groups_count);
-  m.mesh.materials = push_array(arena, OBJMaterial, m.mesh.materials_count);
   
   m.mesh.verts_count = m.mesh.norms_count = m.mesh.textures_count = 0;
   m.mesh.faces_count = m.mesh.objects_count = m.mesh.groups_count = 0;
-  m.mesh.materials_count = 0;
   
   lines.tail = obj;
   while(lines.tail.size)
@@ -340,7 +335,7 @@ obj_parse(Arena *arena, String8 obj)
     }
     else if(str8_match(kind, str8_lit("mtllib"), 0))
     {
-      m.mesh.materials_count += obj_parse_mtllib(arena, fields.tail, m.mesh.materials, m.mesh.materials_count);
+      m.mesh.materials_count += obj_parse_mtllib(arena, fields.tail, m.mesh.materials);
     }
   }
   

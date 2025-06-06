@@ -34,14 +34,14 @@ typedef struct OBJMaterial OBJMaterial;
 struct OBJMaterial
 {
   String8 name;
-  Vec3F32 Ka;      // Ambient
-  Vec3F32 Kd;      // Diffuse
-  Vec3F32 Ks;      // Specular
-  Vec3F32 Ke;      // Emission
-  Vec3F32 Kt;      // Transmittance
+  Vec3F32 Ka;     // Ambient
+  Vec3F32 Kd;     // Diffuse
+  Vec3F32 Ks;     // Specular
+  Vec3F32 Ke;     // Emission
+  Vec3F32 Kt;     // Transmittance
   F32 Ns;         // Shininess
   F32 Ni;         // Index of refraction
-  Vec3F32 Tf;      // Transmission filter
+  Vec3F32 Tf;     // Transmission filter
   F32 d;          // Disolve (alpha)
   F32 illum;      // Illumination model
   B32 fallback;
@@ -109,9 +109,12 @@ function void   ogl_shader_set_matrix4fv(GLuint program, char *name, GLfloat *va
 ////////////////////////////////
 // Functions: OBJ Parser
 
-function Vec3F32 obj_parse_v3f32(String8 str);
-function OBJFace obj_parse_face(String8 str, S64 verts_count, S64 norms_count, S64 textures_count);
-function OBJ obj_parse(Arena *arena, String8 obj);
+function Vec3F32  obj_parse_v3f32(String8 str);
+function OBJFace  obj_parse_face(String8 str, S64 verts_count, S64 norms_count, S64 textures_count);
+function OBJGroup obj_parse_object(String8 str);
+function OBJGroup obj_parse_group(String8 str);
+function S64      obj_parse_mtlllib(Arena *arena, String8 str, OBJMaterial *material_out);
+function OBJ      obj_parse(Arena *arena, String8 obj);
 function GLVertexArray gl_vertex_array_from_obj(Arena *arena, OBJ model);
 
 ////////////////////////////////
