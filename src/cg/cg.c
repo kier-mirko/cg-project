@@ -171,7 +171,72 @@ obj_parse_group(String8 str)
   return result;
 }
 
-function ObjModel 
+function S64
+obj_parse_mtllib(Arena *arena, String8 str, OBJMaterial *materials_out, S64 materials_count)
+{
+  Temp scratch = scratch_begin(0, 0);
+  String8 file_name = str8_trim_left(str);
+  String8 content = os_file_read(scratch.arena, str8_push_cat(scratch.arena, str8_lit("model/"), file_name));
+  
+  String8Cut lines = {0};
+  lines.tail = content;
+  while(lines.tail.size)
+  {
+    lines = str8_cut(lines.tail, '\n');
+    String8Cut fields = str8_cut(str8_trim_left(str8_trim_right(lines.head)), ' ');
+    String8 kind = fields.head;
+    if(str8_match(kind, str8_lit("newmtl"), 0))
+    {
+      materials_out[materials_count].name = str8_trim_left(fields.tail);
+      materials_count += 1;
+    }
+    else if(str8_match(kind, str8_lit("Ka"), 0))
+    {
+      materials_out[materials_count-1].Ka = obj_parse_v3f32(fields.tail);
+    }
+    else if(str8_match(kind, str8_lit("Kd"), 0))
+    {
+      materials_out[materials_count-1].Kd = obj_parse_v3f32(fields.tail);
+    }
+    else if(str8_match(kind, str8_lit("Ks"), 0))
+    {
+      materials_out[materials_count-1].Ks = obj_parse_v3f32(fields.tail);
+    }
+    else if(str8_match(kind, str8_lit("Ke"), 0))
+    {
+      materials_out[materials_count-1].Ke = obj_parse_v3f32(fields.tail);
+    }
+    else if(str8_match(kind, str8_lit("Kt"), 0))
+    {
+      materials_out[materials_count-1].Kt = obj_parse_v3f32(fields.tail);
+    }
+    else if(str8_match(kind, str8_lit("Ns"), 0))
+    {
+      materials_out[materials_count-1].Ns = f32_from_str8(str8_trim_left(fields.tail));
+    }
+    else if(str8_match(kind, str8_lit("Ni"), 0))
+    {
+      materials_out[materials_count-1].Ni = f32_from_str8(str8_trim_left(fields.tail));
+    }
+    else if(str8_match(kind, str8_lit("Tf"), 0))
+    {
+      materials_out[materials_count-1].Tf = obj_parse_v3f32(fields.tail);
+    }
+    else if(str8_match(kind, str8_lit("d"), 0))
+    {
+      materials_out[materials_count].d = f32_from_str8(str8_trim_left(fields.tail));
+    }
+    else if(str8_match(kind, str8_lit("illum"), 0))
+    {
+      materials_out[materials_count].illum = f32_from_str8(str8_trim_left(fields.tail));
+    }
+  }
+  
+  scratch_end(scratch);
+  return materials_count;
+}
+
+function OBJ 
 obj_parse(Arena *arena, String8 obj)
 {
   OBJ m = {0};
