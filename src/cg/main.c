@@ -114,6 +114,7 @@ main(int argc, char **argv)
           max[i] = max[i]>r ? max[i] : r;
         }
       }
+      
       for(S32 i = 0; i < 3; i += 1)
       {
         F32 size = max[i] - min[i];
