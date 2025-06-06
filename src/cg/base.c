@@ -564,6 +564,21 @@ str8_cut(String8 str, U8 sep)
 }
 
 function String8
+str8_push_cat(Arena *arena, String8 a, String8 b)
+{
+  String8 result = {0};
+  result.size = a.size+b.size;
+  result.str = push_array(arena, U8, result.size+1);
+  U8 *ptr = result.str;
+  MemoryCopy(ptr, a.str, a.size);
+  ptr += a.size;
+  MemoryCopy(result.str + a.size, b.str, b.size);
+  ptr += b.size;
+  *ptr = 0;
+  return result;
+}
+
+function String8
 str8_push_copy(Arena *arena, String8 string)
 {
   String8 result = {0};
