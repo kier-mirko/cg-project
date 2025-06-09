@@ -17,48 +17,48 @@ v3f32(F32 x, F32 y, F32 z)
 }
 
 function Vec3F32 
-v3f32_add(Vec3F32 a, Vec3F32 b)
+add_3f32(Vec3F32 a, Vec3F32 b)
 {
   Vec3F32 v = {a.x+b.x, a.y+b.y, a.z+b.z};
   return v;
 }
 
 function Vec3F32 
-v3f32_sub(Vec3F32 a, Vec3F32 b)
+sub_3f32(Vec3F32 a, Vec3F32 b)
 {
   Vec3F32 v = {a.x-b.x, a.y-b.y, a.z-b.z};
   return v;
 }
 
 function Vec3F32 
-v3f32_scale(Vec3F32 v, F32 s)
+scale_3f32(Vec3F32 v, F32 s)
 {
   Vec3F32 result = {v.x*s, v.y*s, v.z*s};
   return result;
 }
 
 function F32
-v3f32_length(Vec3F32 v)
+length_3f32(Vec3F32 v)
 {
   F32 l = sqrt_f32(v.x*v.x + v.y*v.y + v.z*v.z);
   return l;
 }
 
 function F32     
-v3f32_dot(Vec3F32 a, Vec3F32 b)
+dot_3f32(Vec3F32 a, Vec3F32 b)
 {
   F32 x = a.x*b.x + a.y*b.y + a.z*b.z;
   return x;
 }
 
 function Vec3F32
-v3f32_norm(Vec3F32 v)
+norm_3f32(Vec3F32 v)
 {
-  return v3f32_scale(v, 1.f/v3f32_length(v));
+  return scale_3f32(v, 1.f/length_3f32(v));
 }
 
 function Vec3F32
-v3f32_cross(Vec3F32 a, Vec3F32 b)
+cross_3f32(Vec3F32 a, Vec3F32 b)
 {
   Vec3F32 result = 
   {
@@ -72,7 +72,7 @@ v3f32_cross(Vec3F32 a, Vec3F32 b)
 // mat4x4
 
 function Mat4x4F32
-m4x4f32(F32 d)
+mat_4x4f32(F32 d)
 {
   Mat4x4F32 m = {0};
   m.v[0][0] = d;
@@ -83,9 +83,9 @@ m4x4f32(F32 d)
 }
 
 function Mat4x4F32
-m4x4f32_make_translate(Vec3F32 delta)
+make_translate_4x4f32(Vec3F32 delta)
 {
-  Mat4x4F32 m = m4x4f32(1.f);
+  Mat4x4F32 m = mat_4x4f32(1.f);
   m.v[3][0] = delta.x;
   m.v[3][1] = delta.y;
   m.v[3][2] = delta.z;
@@ -93,9 +93,9 @@ m4x4f32_make_translate(Vec3F32 delta)
 }
 
 function Mat4x4F32
-m4x4f32_make_scale(Vec3F32 scale)
+make_scale_4x4f32(Vec3F32 scale)
 {
-  Mat4x4F32 m = m4x4f32(1.f);
+  Mat4x4F32 m = mat_4x4f32(1.f);
   m.v[0][0] = scale.x;
   m.v[1][1] = scale.y;
   m.v[2][2] = scale.z;
@@ -103,10 +103,10 @@ m4x4f32_make_scale(Vec3F32 scale)
 }
 
 function Mat4x4F32 
-m4x4f32_make_rotate(Vec3F32 axis, F32 turns)
+make_rotate_4x4f32(Vec3F32 axis, F32 turns)
 {
-  Mat4x4F32 m = m4x4f32(1.f);
-  axis = v3f32_norm(axis);
+  Mat4x4F32 m = mat_4x4f32(1.f);
+  axis = norm_3f32(axis);
   F32 sin_theta = sin_f32(turns);
   F32 cos_theta = cos_f32(turns);
   F32 cos_value = 1.f - cos_theta;
@@ -123,7 +123,7 @@ m4x4f32_make_rotate(Vec3F32 axis, F32 turns)
 }
 
 function Mat4x4F32
-m4x4f32_make_perspective(F32 fov, F32 aspect, F32 near_z, F32 far_z)
+make_perspective_4x4f32(F32 fov, F32 aspect, F32 near_z, F32 far_z)
 {
   Mat4x4F32 m = {0};
   
@@ -139,7 +139,7 @@ m4x4f32_make_perspective(F32 fov, F32 aspect, F32 near_z, F32 far_z)
 
 // ops
 function Mat4x4F32 
-m4x4f32_mul(Mat4x4F32 a, Mat4x4F32 b)
+mul_4x4f32(Mat4x4F32 a, Mat4x4F32 b)
 {
   Mat4x4F32 c = {0};
   for(S32 i = 0; i < 4; i += 1)
@@ -156,7 +156,7 @@ m4x4f32_mul(Mat4x4F32 a, Mat4x4F32 b)
 }
 
 function Mat4x4F32
-m4x4f32_scale(Mat4x4F32 m, F32 scale)
+scale_4x4f32(Mat4x4F32 m, F32 scale)
 {
   for(S32 j = 0; j < 4; j += 1)
   {
@@ -572,7 +572,7 @@ str8_push_cat(Arena *arena, String8 a, String8 b)
   U8 *ptr = result.str;
   MemoryCopy(ptr, a.str, a.size);
   ptr += a.size;
-  MemoryCopy(result.str + a.size, b.str, b.size);
+  MemoryCopy(ptr, b.str, b.size);
   ptr += b.size;
   *ptr = 0;
   return result;

@@ -502,27 +502,27 @@ enum
 // Functions: Compound types
 
 // 3d vector
-function Vec3F32 v3f32_add(Vec3F32 a, Vec3F32 b);
-function Vec3F32 v3f32_sub(Vec3F32 a, Vec3F32 b);
-function Vec3F32 v3f32_scale(Vec3F32 v, F32 s);
-function F32     v3f32_length(Vec3F32 v);
-function F32     v3f32_dot(Vec3F32 a, Vec3F32 b);
-function Vec3F32 v3f32_norm(Vec3F32 v);
-function Vec3F32 v3f32_cross(Vec3F32 a, Vec3F32 b);
+function Vec3F32 add_3f32(Vec3F32 a, Vec3F32 b);
+function Vec3F32 sub_3f32(Vec3F32 a, Vec3F32 b);
+function Vec3F32 scale_3f32(Vec3F32 v, F32 s);
+function F32     length_3f32(Vec3F32 v);
+function F32     dot_3f32(Vec3F32 a, Vec3F32 b);
+function Vec3F32 norm_3f32(Vec3F32 v);
+function Vec3F32 cross_3f32(Vec3F32 a, Vec3F32 b);
 
 // mat4x4
 
 // constructor
-function Mat4x4F32 m4x4f32(F32 diagonal);
-function Mat4x4F32 m4x4f32_make_translate(Vec3F32 translation);
-function Mat4x4F32 m4x4f32_make_scale(Vec3F32 scale);
-function Mat4x4F32 m4x4f32_make_rotate(Vec3F32 axis, F32 turns);
-function Mat4x4F32 m4x4f32_make_perspective(F32 fov, F32 aspect_ratio, F32 near_z, F32 far_z);
+function Mat4x4F32 mat_4x4f32(F32 diagonal);
+function Mat4x4F32 make_translate_4x4f32(Vec3F32 translation);
+function Mat4x4F32 make_scale_4x4f32(Vec3F32 scale);
+function Mat4x4F32 make_rotate_4x4f32(Vec3F32 axis, F32 turns);
+function Mat4x4F32 make_perspective_4x4f32(F32 fov, F32 aspect_ratio, F32 near_z, F32 far_z);
 //function Mat4x4F32 m4x4f32_make_look_at(Vec3F32 eye, Vec3F32 center, Vec3F32 up);
 
 // ops
-function Mat4x4F32 m4x4f32_mul(Mat4x4F32 a, Mat4x4F32 b);
-function Mat4x4F32 m4x4f32_scale(Mat4x4F32 m, F32 scale);
+function Mat4x4F32 mul_4x4f32(Mat4x4F32 a, Mat4x4F32 b);
+function Mat4x4F32 scale_4x4f32(Mat4x4F32 m, F32 scale);
 //function Mat4x4F32 m4x4f32_inverse(Mat4x4F32 m);
 
 ////////////////////////////////
